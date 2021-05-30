@@ -16,6 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from api.utils import include_api_urls, include_docs_urls
+
+v1_api_urlpatterns = [
+    path('', include_api_urls('v1', namespace='api')),
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-]
+    path('api/v1/docs/', include_docs_urls(
+        {'title': 'Desafio API v1.0.0 ', 'patterns': v1_api_urlpatterns}
+    )),
+] + v1_api_urlpatterns

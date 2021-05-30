@@ -29,6 +29,7 @@ pyjwt = "==1.7.1"
 djangorestframework-simplejwt = "==4.4.0"
 drf-jwt = "==1.17.3"
 django-csp = "==3.7"
+django-admin-generator = "==2.2.1"
 
 [requires]
 python_version = "3.8"
