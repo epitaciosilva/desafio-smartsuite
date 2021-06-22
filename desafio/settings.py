@@ -58,7 +58,7 @@ EXTERNAL_APPS = [
 
 LOCAL_APPS = [
     'api',
-    'hotel_chain'
+    'hotel'
 ]
 
 INSTALLED_APPS = LOCAL_APPS + EXTERNAL_APPS + DEFAULT_APPS
@@ -74,7 +74,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.RemoteUserMiddleware',
-    'csp.middleware.CSPMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True

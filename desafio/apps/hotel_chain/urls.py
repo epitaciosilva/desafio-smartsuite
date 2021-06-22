@@ -15,10 +15,10 @@ router.register('rate', views.RateViewSet)
 router.register('reserve', views.ReserveViewSet)
 
 
-v1_api_urlpatterns = [
-    path('', include(router.urls))
-]
+# v1_api_urlpatterns = [
+#     path('', include(router.urls))
+# ]
 
-urlpatterns = [
+# urlpatterns = [
 
-]
+# ]
