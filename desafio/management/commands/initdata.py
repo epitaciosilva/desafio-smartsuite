@@ -1,10 +1,6 @@
-import os
-from importlib import import_module
-
-from django.conf import settings
-from django.core.management.base import BaseCommand
-
 from hotel.models import Hotel, Tax
+
+from django.core.management.base import BaseCommand
 
 
 def create_tax(hotel, client_type, value, week_days=True):
@@ -13,7 +9,7 @@ def create_tax(hotel, client_type, value, week_days=True):
 
     days = []
     if week_days:
-        days = week       
+        days = week
     else:
         days = weekend
 

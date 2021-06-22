@@ -9,7 +9,6 @@ app_name = 'hotel'
 router = DefaultRouter()
 router.register('hotel', views.HotelViewSet)
 router.register('tax', views.TaxViewSet)
-router.register('client', views.ClientViewSet)
 router.register('reserve', views.ReserveViewSet)
 
 

@@ -18,20 +18,20 @@ class Hotel(models.Model):
         return self.name
 
 
-class Client(models.Model):
-    name = models.CharField(_("Name"), max_length=255)
-    email = models.EmailField(_("Email"), max_length=254)
-    telefone = models.CharField(_("Telefone"), max_length=11, validators=[MinValueValidator(11)])
-    created_at = models.DateTimeField('Created At', auto_now_add=True)
-    updated_at = models.DateTimeField('Updated At', auto_now=True)
+# class Client(models.Model):
+#     name = models.CharField(_("Name"), max_length=255)
+#     email = models.EmailField(_("Email"), max_length=254)
+#     telefone = models.CharField(_("Telefone"), max_length=11, validators=[MinValueValidator(11)])
+#     created_at = models.DateTimeField('Created At', auto_now_add=True)
+#     updated_at = models.DateTimeField('Updated At', auto_now=True)
 
-    class Meta:
-        verbose_name = 'Client'
-        verbose_name_plural = 'Clients'
-        ordering = ('name',)
+#     class Meta:
+#         verbose_name = 'Client'
+#         verbose_name_plural = 'Clients'
+#         ordering = ('name',)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 class Tax(models.Model):
@@ -70,7 +70,9 @@ class Tax(models.Model):
 
 
 class Reserve(models.Model):
-    client = models.ForeignKey(Client, verbose_name=_("Client"), on_delete=models.PROTECT)
+    name = models.CharField(_("Name"), max_length=255)
+    email = models.EmailField(_("Email"), max_length=254)
+    telefone = models.CharField(_("Telefone"), max_length=11, validators=[MinValueValidator(11)])
     hotel = models.ForeignKey(Hotel, verbose_name=_("Hotel"), on_delete=models.CASCADE)
     start = models.DateField(_("Entrance"))
     end = models.DateField(_("Exit"))
@@ -79,7 +81,7 @@ class Reserve(models.Model):
     class Meta:
         verbose_name = 'Reserve'
         verbose_name_plural = 'Reserves'
-        ordering = ('hotel', 'client',)
+        ordering = ('hotel', 'name',)
 
     def __str__(self):
         return f'{self.hotel.name} - {self.client.name} - {self.value}'
