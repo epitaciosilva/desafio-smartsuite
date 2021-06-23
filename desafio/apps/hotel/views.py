@@ -64,6 +64,7 @@ class ReserveViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        request.data['client_type'] = 1 if request.data['client_type'] == "Regular" else 2
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -150,4 +151,4 @@ class Cheapest(APIView):
                 "cheapest": "Unregistered hotels!"
             })
 
-        return Response({"cheapest": best_hotel.name, "value": min_value})
+        return Response({"cheapest": best_hotel.name})

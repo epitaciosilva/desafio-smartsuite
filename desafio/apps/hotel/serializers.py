@@ -19,11 +19,18 @@ class TaxSerializer(serializers.ModelSerializer):
 
 class ReserveSerializer(serializers.ModelSerializer):
     value = serializers.ReadOnlyField()
+    cancel = serializers.ReadOnlyField()
+
+    hotel = HotelSerializer(read_only=True)
+    hotel_id = serializers.PrimaryKeyRelatedField(
+        queryset=Hotel.objects.all(),
+        write_only=True,
+    )
 
     class Meta:
         model = Reserve
-        fields = ('id', 'name', 'email', 'telephone', 'client_type', 'hotel', 'start', 'end', 'value', 'cancel',
-                  'observations')
+        fields = ('id', 'name', 'email', 'telephone', 'client_type', 'hotel_id', 'hotel', 'start', 'end', 'value',
+                  'cancel', 'observations')
 
     def calculate_value(self, start, end, hotel, client_type):
         delta = end - start
@@ -42,9 +49,10 @@ class ReserveSerializer(serializers.ModelSerializer):
         validated_data['value'] = self.calculate_value(
             validated_data['start'],
             validated_data['end'],
-            validated_data['hotel'],
+            validated_data['hotel_id'],
             validated_data['client_type']
         )
+        validated_data['hotel_id'] = validated_data['hotel_id'].id
         return super(ReserveSerializer, self).create(validated_data)
 
     def to_representation(self, instance):

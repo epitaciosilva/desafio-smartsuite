@@ -67,7 +67,7 @@ def include_api_urls(version, namespace):
                 if prefix:
                     prefix += '/'
                 includes.append(
-                    path(f'{prefix}api/{version}/', include((patterns, app.name), namespace=app.name))
+                    path(f'api/{version}/', include((patterns, app.name), namespace=app.name))
                 )
 
     return include((includes, namespace), namespace)

@@ -5,11 +5,14 @@ import rest_framework_filters as filters
 
 class ReserveFilter(filters.FilterSet):
     reserve_type = filters.CharFilter(method='filter_reserve_type')
+    # start = filters.DateFilter(name="start", lookup_expr="gte")
+    # end = filters.DateFilter(name="end", lookup_expr="lte")
 
     class Meta:
         model = Reserve
         fields = {
             "hotel": ['exact'],
+            "hotel__name": ['istartswith']
         }
 
     def filter_reserve_type(self, qs, name, value):
