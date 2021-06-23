@@ -1,11 +1,17 @@
 import re
 
+from hotel.filters import ReserveFilter
 from hotel.models import Hotel, Tax
 from hotel.serializers import HotelSerializer, ReserveSerializer, TaxSerializer
 
 from rest_framework import serializers, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from django.core.exceptions import ObjectDoesNotExist
+
+from api.utils import Schema
 
 
 class HotelViewSet(viewsets.ModelViewSet):
@@ -21,10 +27,34 @@ class TaxViewSet(viewsets.ModelViewSet):
 class ReserveViewSet(viewsets.ModelViewSet):
     serializer_class = ReserveSerializer
     queryset = serializer_class.Meta.model.objects.all()
+    filter_class = ReserveFilter
+    schema = Schema()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({"reserve": serializer.data['number']}, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=['patch'])
+    def cancel(self, request, pk):
+        try:
+            pk = int(pk)
+            instance = self.get_queryset().get(pk=pk)
+        except ValueError as e:
+            raise serializers.ValidationError(e)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError("Reserve not found!")
+        else:
+            instance.cancel = True
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class Cheapest(APIView):
-    def break_query_string(self, query_string):
+    def __break_query_string(self, query_string):
         qs = query_string.split(": ")
 
         client_type = None
@@ -46,7 +76,7 @@ class Cheapest(APIView):
         if not request.query_params:
             return Response({'Query string is required.'}, status.HTTP_400_BAD_REQUEST)
 
-        client_type, days = self.break_query_string(list(request.query_params.keys())[0])
+        client_type, days = self.__break_query_string(list(request.query_params.keys())[0])
 
         min_value = float("inf")
         best_hotel = None

@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext as _
 
@@ -54,7 +54,7 @@ class Tax(models.Model):
     )
 
     hotel = models.ForeignKey(Hotel, verbose_name=_("Hotel Tax"), on_delete=models.CASCADE)
-    client_type = models.PositiveSmallIntegerField(_("Type Client"), choices=CLIENT_TYPES)
+    client_type = models.PositiveSmallIntegerField(_("Client Type"), choices=CLIENT_TYPES)
     day = models.CharField(_("Day"), max_length=4, choices=DAYS)
     value = models.FloatField(_("Value"))
     created_at = models.DateTimeField('Created At', auto_now_add=True)
@@ -70,13 +70,16 @@ class Tax(models.Model):
 
 
 class Reserve(models.Model):
+    # number = models.PositiveIntegerField(_("Reserve Number"))
     name = models.CharField(_("Name"), max_length=255)
     email = models.EmailField(_("Email"), max_length=254)
-    telefone = models.CharField(_("Telefone"), max_length=11, validators=[MinValueValidator(11)])
+    telephone = models.CharField(_("Telefone"), max_length=11, validators=[MinLengthValidator(11)])
     hotel = models.ForeignKey(Hotel, verbose_name=_("Hotel"), on_delete=models.CASCADE)
+    client_type = models.PositiveSmallIntegerField(_("Client Type"), choices=Tax.CLIENT_TYPES)
     start = models.DateField(_("Entrance"))
     end = models.DateField(_("Exit"))
     value = models.FloatField(_("Value of reserve"))
+    cancel = models.BooleanField(_("Cancel"), default=False)
 
     class Meta:
         verbose_name = 'Reserve'

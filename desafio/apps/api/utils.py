@@ -3,6 +3,7 @@ import json
 from importlib import import_module
 
 import coreapi
+import coreschema
 from coreapi.codecs.corejson import _document_to_primitive, force_bytes
 from coreapi.compat import COMPACT_SEPARATORS, VERBOSE_SEPARATORS
 
@@ -11,6 +12,7 @@ from rest_framework.documentation import (
     get_docs_view, get_schema_view,
 )
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.schemas.coreapi import AutoSchema
 
 from django.apps import apps
 from django.conf.urls import url
@@ -190,3 +192,53 @@ def include_docs_urls(include_docs_urls_parameters: include_docs_urls_parameters
         url(r'^schema.js$', schema_js_view, name='schema-js')
     ]
     return include((urls, 'api-docs'), namespace='api-docs')
+
+
+def get_filter_description(filter, filter_class):
+    # quebra o nome do filtro
+    f = filter.split("__")
+    name_filter = "__".join(f[:-1])
+    return_dict = {
+        'iexact': f'Exactly <code>{name_filter}</code>, but ignore case.',
+        'startswith': f'<code>{name_filter}</code> start with.',
+        'istartswith': f'<code>{name_filter}</code> start with, but ignore case.',
+        'in': f'<code>{name_filter}</code> in the list of values.',
+        'ordering': '',
+        'exactly': f'Exactly <code>{f[0]}</code>.',
+    }
+
+    if f[0] == 'ordering':
+        return_dict['ordering'] = 'Sorting filters available: ' \
+            + ', '.join([f'<code>{x}</code>' for x in filter_class[filter].param_map]) \
+            + '<br> Use <code>-</code> to descending.'
+        f[-1] = 'ordering'
+    elif len(f) == 1:
+        f[-1] = 'exactly'
+
+    if f[-1] in return_dict:
+        return return_dict[f[-1]]
+    return filter
+
+
+class Schema(AutoSchema):
+    def get_filter_fields(self, path, method):
+        actions = ['list']
+        if hasattr(self.view, 'action') and self.view.action not in actions:
+            return []
+
+        filter_list = []
+        filters = []
+        if hasattr(self.view, 'filter_class'):
+            filter_list = self.view.filter_class.get_filters()
+
+        for f in filter_list:
+            filters.append(
+                coreapi.Field(
+                    f,
+                    required=False,
+                    location="query",
+                    schema=coreschema.String(description=get_filter_description(f, filter_list)),
+                    description="Query filters.",
+                )
+            )
+        return filters
