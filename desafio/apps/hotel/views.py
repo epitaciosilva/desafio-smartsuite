@@ -10,6 +10,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from django.db import transaction
 
 from api.utils import Schema
 
@@ -30,11 +32,49 @@ class ReserveViewSet(viewsets.ModelViewSet):
     filter_class = ReserveFilter
     schema = Schema()
 
+    def send_email_reserve(self, title, reserve):
+        message = "Dados de confirmação: \n" \
+                  "Número da reserva: {number} \n" \
+                  "Nome: {name} \n" \
+                  "Telefone: {telephone}\n" \
+                  "Email: {email}\n" \
+                  "Hotel: {hotel}\n" \
+                  "Tipo de reserva: {reserve_type}\n" \
+                  "Valor: R$ {valor} \n" \
+                  "Período: {start} à {end}\n" \
+            .format(
+                number=reserve.id,
+                name=reserve.name,
+                telephone=reserve.telephone,
+                email=reserve.email,
+                hotel=reserve.hotel.name,
+                reserve_type=Tax.client_type_full(reserve.client_type),
+                valor=reserve.value,
+                start=reserve.start.strftime("%d/%b/%Y"),
+                end=reserve.end.strftime("%d/%b/%Y")
+            )
+
+        send_mail(
+            title,
+            message,
+            None,
+            [reserve.email],
+            fail_silently=False
+        )
+
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+
+        reserve = serializer.instance
+        self.send_email_reserve(
+            "Confirmação de reserva no hotel {}".format(reserve.hotel.name),
+            reserve
+        )
+
         return Response({"reserve": serializer.data['number']}, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['patch'])
@@ -47,10 +87,18 @@ class ReserveViewSet(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             raise serializers.ValidationError("Reserve not found!")
         else:
-            instance.cancel = True
-            instance.save()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if not instance.cancel:
+                instance.cancel = True
+                instance.save()
+
+                self.send_email_reserve(
+                    "Cancelamento da reserva no hotel {}".format(instance.hotel.name),
+                    instance
+                )
+
+            return Response({
+                "reserve": "Reserva cancelada com sucesso!"
+            }, status=status.HTTP_200_OK)
 
 
 class Cheapest(APIView):

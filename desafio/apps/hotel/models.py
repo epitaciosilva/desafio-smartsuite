@@ -68,9 +68,12 @@ class Tax(models.Model):
     def __str__(self):
         return f'{self.hotel.name} - {self.client_type} - {self.day} - {self.value}'
 
+    @staticmethod
+    def client_type_full(client_type):
+        return Tax.CLIENT_TYPES[client_type - 1][1]
+
 
 class Reserve(models.Model):
-    # number = models.PositiveIntegerField(_("Reserve Number"))
     name = models.CharField(_("Name"), max_length=255)
     email = models.EmailField(_("Email"), max_length=254)
     telephone = models.CharField(_("Telefone"), max_length=11, validators=[MinLengthValidator(11)])
@@ -80,6 +83,7 @@ class Reserve(models.Model):
     end = models.DateField(_("Exit"))
     value = models.FloatField(_("Value of reserve"))
     cancel = models.BooleanField(_("Cancel"), default=False)
+    observations = models.TextField(_("Observations"), blank=True, null=True)
 
     class Meta:
         verbose_name = 'Reserve'

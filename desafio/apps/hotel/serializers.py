@@ -22,7 +22,8 @@ class ReserveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reserve
-        fields = ('id', 'name', 'email', 'telephone', 'client_type', 'hotel', 'start', 'end', 'value', 'cancel')
+        fields = ('id', 'name', 'email', 'telephone', 'client_type', 'hotel', 'start', 'end', 'value', 'cancel',
+                  'observations')
 
     def calculate_value(self, start, end, hotel, client_type):
         delta = end - start
